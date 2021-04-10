@@ -12,7 +12,7 @@ Selenium with the standard Chrome driver.
 
 # How to use
 
-To lazy to provide a setup.py. Use pipenv like a real man.
+Too lazy to provide a setup.py. Use pipenv like a real man.
 To launch :
 
     python -m x_is_dead
