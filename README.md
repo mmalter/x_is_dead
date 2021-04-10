@@ -10,6 +10,12 @@ A friend told me that JQuery was dead and I really wasn't believing that. A con
 
 Selenium with the standard Chrome driver.
 
+# How to use
+
+To lazy to provide a setup.py. Use pipenv like a real man.
+To launch :
+  python -m x_is_dead
+
 # Last but not least
 
 The name of this package does not imply that X is dead and we should all start using Wayland. By no means.
