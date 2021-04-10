@@ -14,7 +14,7 @@ Selenium with the standard Chrome driver.
 
 To lazy to provide a setup.py. Use pipenv like a real man.
 To launch :
-  python -m x_is_dead
+    python -m x_is_dead
 
 # Last but not least
 
