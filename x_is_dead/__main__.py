@@ -16,6 +16,7 @@ from docopt import docopt
 from importlib.resources import files, as_file
 import sys
 from selenium import webdriver
+from x_is_dead.frameworks import frameworks as fw
 
 #Helpers
 
@@ -23,8 +24,6 @@ def args_with_defaults(arguments):
     if arguments["--website-list"] == None:
         t = files("x_is_dead.resources")
         arguments["--website-list"] = t.joinpath("websites")
-    if arguments["<framework>"] == None:
-        arguments["<framework>"] = "JQuery"
     return arguments
 
 def website_list_from_path(path):
@@ -32,67 +31,52 @@ def website_list_from_path(path):
         websites = [line for line in f]
     return websites
 
-def framework_name_to_fun(name):
-    if name == "JQuery":
-        fun = jquery
-    else:
-        raise LookupError
-    return fun
-
-def is_it_dead(d, website, wait_time, framework_fun):
+def is_it_dead(d, website, wait_time):
     d.get(website)
     d.implicitly_wait(wait_time)
-    return framework_fun(d)
+    results = dict()
+    for name, fun in fw.items():
+        results[name] = fun(d)
+    return results
 
-def format_results(rs, framework):
+def print_results(rs):
+    frameworks_results = dict()
+    for name, fun in fw.items():
+        frameworks_results[name] = 0
+    total = 0
     fail = 0
-    using = 0
-    not_using = 0
     for r in rs:
         website, result = r
-        if result == True:
-            using += 1
-        if result == False:
-            not_using += 1
         if result == "Failed":
             fail += 1
-    total = using + not_using
-    o = f"Over {total} websites, {using} use {framework}."
-    return o
-    
-
-# Check functions
-
-def jquery(d):
-    script = """
-    if(!!window.jQuery)
-    {
-        return true;
-    } else {
-        return false;
-    }
-    """
-    o = d.execute_script(script)
-    d.implicitly_wait(1)
-    return o
+        else:
+            for name, is_using in result.items():
+                if is_using == True:
+                    frameworks_results[name] += 1
+        total += 1
+    print(f"{total} websites got tested.")
+    print(f"{fail} websites failed to load in selenium.")
+    for name, use in frameworks_results.items():
+        print(f"{use} websites use {name}.")
 
 # Main
 
 def main(arguments):
     arguments = args_with_defaults(arguments)
     websites = website_list_from_path(arguments["--website-list"])
-    f = framework_name_to_fun(arguments["<framework>"])
     d = webdriver.Chrome()
     d.set_page_load_timeout(20)
     d.implicitly_wait(2)
     results = []
     for w in websites:
         try:
-            r = is_it_dead(d, w, 10, f)
-        except:
+            r = is_it_dead(d, w, 10)
+        except Exception as e:
+            print("FAILED %s" % w)
+            print(e)
             r = "Failed"
         results.append((w,r))
-    print(format_results(results, arguments["<framework>"]))
+    print_results(results)
 
 # Entry point
 if __name__ == '__main__':
